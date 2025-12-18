@@ -1,8 +1,6 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { config } from "process";
-
 
 export type Config = {
   dbUrl: string;
@@ -15,15 +13,17 @@ export function setUser(userName: string){
   writeConfig(current)
 };
 
-export function validateConfig(rawconfig: any): Config {
+export function validateConfig(rawconfig: any) {
   if (!rawconfig.db_url || typeof rawconfig.db_url !== 'string') {
     throw new Error('db_url is required in config file');
   }
-  if (
-    !rawconfig.current_user_name ||
-    typeof rawconfig.current_user_name !== 'string'
-  ) {
+
+  if (!rawconfig.current_user_name /*|| typeof rawconfig.current_user_name !== 'string'*/) {
     throw new Error('current_user_name is required in config file');
+  }
+
+  if (typeof rawconfig.current_user_name !== 'string') {
+    throw new Error('current_user_name is not a string');
   }
 
   const config: Config = {
@@ -34,7 +34,7 @@ export function validateConfig(rawconfig: any): Config {
   return config
 }
 
-export function readConfig(): Config {
+export function readConfig() {
   const fullPath = getConfigFilePath();
   const data = fs.readFileSync(fullPath, 'utf-8');
   const rawConfig = JSON.parse(data);
@@ -49,12 +49,12 @@ function getConfigFilePath(): string {
 
 function writeConfig(config: Config) {
   const fullPath = getConfigFilePath();
+
   const rawConfig = {
     db_url: config.dbUrl,
     current_user_name: config.currentUserName,
   };
 
   const data = JSON.stringify(rawConfig, null, 2);
-
   fs.writeFileSync(fullPath, data, {encoding: 'utf-8'});
 }
