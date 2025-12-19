@@ -1,46 +1,36 @@
-import { setUser, readConfig } from "./config";
-import { argv } from "node:process";
+import {
+  CommandsRegistry,
+  registerCommand,
+  runCommand,
+} from "./commands/commands";
+import { handlerLogin, handlerRegister } from "./commands/users";
 
-function main() {
-  const registry: CommandsRegistry = {}
-  registerCommand(registry, 'login', handlerLogin);
-  const args: string[] = argv
-  // console.log(args)
-  if (args.length <= 3) {
-    throw new Error('no arguments provided')
+async function main() {
+  const args = process.argv.slice(2);
+
+  if (args.length < 1) {
+    console.log("usage: cli <command> [args...]");
+    process.exit(1);
   }
-  const cmd = args[2]
-  const cmdArgs = args.slice(3)
-  runCommand(registry, cmd, ...cmdArgs)
-  // const config = readConfig();
-  // console.log(config);
+
+  const cmdName = args[0];
+  const cmdArgs = args.slice(1);
+  const commandsRegistry: CommandsRegistry = {};
+
+  registerCommand(commandsRegistry, "login", handlerLogin);
+  registerCommand(commandsRegistry, "register", handlerRegister);
+
+  try {
+    await runCommand(commandsRegistry, cmdName, ...cmdArgs);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error(`Error running command ${cmdName}: ${err.message}`);
+    } else {
+      console.error(`Error running command ${cmdName}: ${err}`);
+    }
+    process.exit(1);
+  }
+  process.exit(0);
 }
 
 main();
-
-type CommandHandler = (cmdName: string, ...args: string[]) => void;
-
-function handlerLogin(cmdName: string, ...args: string[]){
-  if (!args) {
-    throw new Error('login handler requires a username');
-  }
-  console.log('Login', args)
-  const username = args[0]
-  setUser(username);
-  console.log(`The username '${username}' has been set.`)
-};
-
-type CommandsRegistry = Record<string, CommandHandler>
-
-function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler){
-  registry[cmdName] = handler;
-  return registry;
-}
-
-function runCommand(registry: CommandsRegistry, cmdName: string, ...args: string[]) {
-  const cmd = registry[cmdName]
-  if (!cmd){
-    throw new Error('command not found');
-  }
-  cmd(cmdName, ...args);
-}
