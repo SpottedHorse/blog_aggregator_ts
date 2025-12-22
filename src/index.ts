@@ -3,7 +3,14 @@ import {
   registerCommand,
   runCommand,
 } from "./commands/commands";
-import { handlerLogin, handlerRegister } from "./commands/users";
+
+import { 
+  handlerAllUsers,
+  handlerLogin, 
+  handlerRegister, 
+  handlerTruncateUsers 
+} from "./commands/users";
+
 
 async function main() {
   const args = process.argv.slice(2);
@@ -12,13 +19,14 @@ async function main() {
     console.log("usage: cli <command> [args...]");
     process.exit(1);
   }
-
   const cmdName = args[0];
   const cmdArgs = args.slice(1);
   const commandsRegistry: CommandsRegistry = {};
 
   registerCommand(commandsRegistry, "login", handlerLogin);
   registerCommand(commandsRegistry, "register", handlerRegister);
+  registerCommand(commandsRegistry, "reset", handlerTruncateUsers);
+  registerCommand(commandsRegistry, "users", handlerAllUsers)
 
   try {
     await runCommand(commandsRegistry, cmdName, ...cmdArgs);

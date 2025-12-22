@@ -12,3 +12,16 @@ export async function getUser(name: string) {
   const result = await db.select().from(users).where(eq(users.name, name));
   return firstOrUndefined(result);
 }
+
+export async function getAllUsers() {
+  const result = await db.select().from(users)
+  return result
+}
+
+//TRUNCATE the user table
+export async function truncateUsers() {
+  // const userTable = await db.select().from(users)
+  // console.log(await userTable)
+  const result = await db.delete(users).returning();
+  return result
+}

@@ -1,17 +1,15 @@
-import { setUser } from "../config";
-import { createUser, getUser } from "../lib/db/queries/users";
+import { readConfig, setUser } from "../config";
+import { createUser, getUser, truncateUsers, getAllUsers } from "../lib/db/queries/users";
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
   if (args.length !== 1) {
     throw new Error(`usage: ${cmdName} <name>`);
   }
-
   const userName = args[0];
   const existingUser = await getUser(userName);
   if (!existingUser) {
     throw new Error(`User ${userName} not found`);
   }
-
   setUser(existingUser.name);
   console.log("User switched successfully!");
 }
@@ -20,13 +18,26 @@ export async function handlerRegister(cmdName: string, ...args: string[]) {
   if (args.length != 1) {
     throw new Error(`usage: ${cmdName} <name>`);
   }
-
   const userName = args[0];
   const user = await createUser(userName);
   if (!user) {
     throw new Error(`User ${userName} not found`);
   }
-
   setUser(user.name);
   console.log("User created successfully!");
+}
+
+export async function handlerTruncateUsers(cmdName: string, ...args: string[]) {
+  console.log(cmdName, ' called,,,\nDeleting users table...\n')
+  const result = await truncateUsers();
+  console.log('Deleted: ', result);
+  const emptyTable = await getAllUsers();
+  console.log('\nEmpty table: ', emptyTable)
+}
+
+export async function handlerAllUsers(cmdName:string, ...args: string[]) {
+  const allUsers = await getAllUsers();
+  for (const user of allUsers) {
+    console.log(`* ${user.name}`, (readConfig().currentUserName == user.name) ? '(current)' : '');
+  }
 }
