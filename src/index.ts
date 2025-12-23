@@ -4,7 +4,7 @@ import {
   runCommand,
 } from "./commands/commands";
 
-import { handlerAgg } from "./commands/rss";
+import { handlerAgg } from "./commands/aggregate";
 
 import { 
   handlerAllUsers,
