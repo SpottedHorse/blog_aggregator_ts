@@ -25,3 +25,11 @@ export async function truncateUsers() {
   const result = await db.delete(users).returning();
   return result
 }
+
+export async function selectUser(name: string) {
+  const result = await db.select().from(users).where(eq(users.name, name));
+  if (result.length === 0) {
+    throw new Error("User can not be found");
+  }
+  return result[0];
+}

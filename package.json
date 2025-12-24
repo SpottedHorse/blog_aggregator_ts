@@ -6,7 +6,8 @@
     "start": "tsx ./src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate"
+    "migrate": "drizzle-kit migrate",
+    "connect": "sudo -u postgres psql"
   },
   "keywords": [],
   "author": "",
