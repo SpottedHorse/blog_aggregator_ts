@@ -47,3 +47,8 @@ export async function getFeedFollowsForUser(userId: string) {
 
   return result;
 }
+
+export async function unfollowFeed(userId: string, feedId: string) {
+  const result = db.delete(feedFollows).where(and(eq(feedFollows.userId, userId), eq(feedFollows.feedId, feedId)));
+  return result;
+}

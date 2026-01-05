@@ -11,7 +11,7 @@ import {
 import { handlerReset } from "./commands/reset";
 import { handlerAgg } from "./commands/aggregate";
 import { handlerAddFeed, handlerListFeeds } from "./commands/feeds";
-import { handlerFollow, handlerListFeedFollows } from "./commands/follows";
+import { handlerFollow, handlerListFeedFollows, handlerUnfollow } from "./commands/follows";
 import { middlewareLoggedIn } from "./middleware";
 
 async function main() {
@@ -31,21 +31,30 @@ async function main() {
   registerCommand(commandsRegistry, "reset", handlerReset);
   registerCommand(commandsRegistry, "users", handlerListUsers);
   registerCommand(commandsRegistry, "agg", handlerAgg);
+  registerCommand(commandsRegistry, "feeds", handlerListFeeds);
+  
   registerCommand(
     commandsRegistry,
     "addfeed",
     middlewareLoggedIn(handlerAddFeed),
   );
-  registerCommand(commandsRegistry, "feeds", handlerListFeeds);
+  
   registerCommand(
     commandsRegistry,
     "follow",
     middlewareLoggedIn(handlerFollow),
   );
+  
   registerCommand(
     commandsRegistry,
     "following",
     middlewareLoggedIn(handlerListFeedFollows),
+  );
+  
+  registerCommand(
+    commandsRegistry,
+    "unfollow",
+    middlewareLoggedIn(handlerUnfollow),
   );
 
   try {
