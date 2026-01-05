@@ -5,10 +5,13 @@ import {
 } from "./commands/commands";
 
 import { 
-  handlerAddFeed,
   handlerAgg,
-  handlerFeeds,
 } from "./commands/aggregate";
+
+import { 
+  handlerAddFeed,
+  handlerFeeds,
+} from "./commands/feeds";
 
 import { 
   handlerAllUsers,
