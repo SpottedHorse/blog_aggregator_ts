@@ -1,38 +1,59 @@
-import { readConfig } from "src/config";
-import { addFeed, getFeeds } from "src/lib/db/queries/feeds";
-import type { SelectUser, SelectFeed, InsertFeed } from "../lib/db/schema";
-import { selectUser, getUser, getUserByID } from "src/lib/db/queries/users";
+import { createFeed, getFeeds } from "../lib/db/queries/feeds";
+import { getUserById } from "../lib/db/queries/users";
+import { Feed, User } from "src/lib/db/schema";
+import { createFeedFollow } from "src/lib/db/queries/follows";
+import { printFeedFollow } from "./follows";
 
-export async function handlerAddFeed(cmdName: string, ...args: string[]) {
-  if (args.length != 2) {
-    throw new Error(`usage: ${cmdName} <name> <url>`);
+export async function handlerAddFeed(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
+  if (args.length !== 2) {
+    throw new Error(`usage: ${cmdName} <feed_name> <url>`);
   }
-  const name = args[0]
-  const feedURL = args[1]
-  const currentUser = readConfig().currentUserName
-  // console.log(`---handlerAddFeed---\nname: ${name}\nfeedURL: ${feedURL}\ncurrentUser: ${currentUser}\n`)
-  const addedFeed: InsertFeed = await addFeed(name, feedURL, currentUser)
-  // console.log(`addedFeed: ${addedFeed}`)
-  const user: SelectUser = await getUser(currentUser)
-  // console.log(`user: ${user}`)
-  
-  printFeed(addedFeed, user)
+
+  const feedName = args[0];
+  const url = args[1];
+
+  const feed = await createFeed(feedName, url, user.id);
+  if (!feed) {
+    throw new Error(`Failed to create feed`);
+  }
+
+  const feedFollow = await createFeedFollow(user.id, feed.id);
+
+  printFeedFollow(user.name, feedFollow.feedName);
+
+  console.log("Feed created successfully:");
+  printFeed(feed, user);
 }
 
-async function printFeed(feed: InsertFeed, user: SelectUser) {
-  // console.log(`Feed: ${JSON.stringify(feed, null, 2)}\n\nUser: ${JSON.stringify(user, null, 2)}`);
+function printFeed(feed: Feed, user: User) {
   console.log(`* ID:            ${feed.id}`);
   console.log(`* Created:       ${feed.createdAt}`);
   console.log(`* Updated:       ${feed.updatedAt}`);
   console.log(`* name:          ${feed.name}`);
   console.log(`* URL:           ${feed.url}`);
-  console.log(`* User:          ${user?.name}`);
+  console.log(`* User:          ${user.name}`);
 }
 
-export async function handlerFeeds() {
-  const feedsTable = await getFeeds();
-  for (const feed of feedsTable) {
-    const user = await getUserByID(feed.userId)
-    console.log(`Name: ${feed.name}\nURL: ${feed.url}\nUser: ${user?.name}\n`)
+export async function handlerListFeeds(_: string) {
+  const feeds = await getFeeds();
+
+  if (feeds.length === 0) {
+    console.log(`No feeds found.`);
+    return;
+  }
+
+  console.log(`Found %d feeds:\n`, feeds.length);
+  for (let feed of feeds) {
+    const user = await getUserById(feed.userId);
+    if (!user) {
+      throw new Error(`Failed to find user for feed ${feed.id}`);
+    }
+
+    printFeed(feed, user);
+    console.log(`=====================================`);
   }
 }

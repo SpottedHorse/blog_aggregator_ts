@@ -3,25 +3,16 @@ import {
   registerCommand,
   runCommand,
 } from "./commands/commands";
-
-import { 
-  handlerAgg,
-} from "./commands/aggregate";
-
-import { 
-  handlerAddFeed,
-  handlerFeeds,
-} from "./commands/feeds";
-
-import { 
-  handlerAllUsers,
-  handlerLogin, 
+import {
+  handlerListUsers,
+  handlerLogin,
   handlerRegister,
 } from "./commands/users";
-
 import { handlerReset } from "./commands/reset";
-
-
+import { handlerAgg } from "./commands/aggregate";
+import { handlerAddFeed, handlerListFeeds } from "./commands/feeds";
+import { handlerFollow, handlerListFeedFollows } from "./commands/follows";
+import { middlewareLoggedIn } from "./middleware";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -30,6 +21,7 @@ async function main() {
     console.log("usage: cli <command> [args...]");
     process.exit(1);
   }
+
   const cmdName = args[0];
   const cmdArgs = args.slice(1);
   const commandsRegistry: CommandsRegistry = {};
@@ -37,10 +29,24 @@ async function main() {
   registerCommand(commandsRegistry, "login", handlerLogin);
   registerCommand(commandsRegistry, "register", handlerRegister);
   registerCommand(commandsRegistry, "reset", handlerReset);
-  registerCommand(commandsRegistry, "users", handlerAllUsers);
+  registerCommand(commandsRegistry, "users", handlerListUsers);
   registerCommand(commandsRegistry, "agg", handlerAgg);
-  registerCommand(commandsRegistry, "addfeed", handlerAddFeed)
-  registerCommand(commandsRegistry, "feeds", handlerFeeds)
+  registerCommand(
+    commandsRegistry,
+    "addfeed",
+    middlewareLoggedIn(handlerAddFeed),
+  );
+  registerCommand(commandsRegistry, "feeds", handlerListFeeds);
+  registerCommand(
+    commandsRegistry,
+    "follow",
+    middlewareLoggedIn(handlerFollow),
+  );
+  registerCommand(
+    commandsRegistry,
+    "following",
+    middlewareLoggedIn(handlerListFeedFollows),
+  );
 
   try {
     await runCommand(commandsRegistry, cmdName, ...cmdArgs);

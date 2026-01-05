@@ -1,16 +1,31 @@
+import { eq } from "drizzle-orm";
 import { db } from "..";
-import { feeds, users, type SelectFeed } from "../schema";
-import { selectUser } from "./users";
+import { feeds } from "../schema";
+import { firstOrUndefined } from "./utils";
 
+export async function createFeed(
+  feedName: string,
+  url: string,
+  userId: string,
+) {
+  const result = await db
+    .insert(feeds)
+    .values({
+      name: feedName,
+      url,
+      userId,
+    })
+    .returning();
 
-export async function addFeed(name: string, feedURL: string, user_name: string) {
-  const userUUID = await selectUser(user_name)
-  // console.log(`userUUID: ${userUUID.id}\n`)
-  const [result] = await db.insert(feeds).values({ name, url: feedURL, userId: userUUID.id }).returning();
-  return result;
+  return firstOrUndefined(result);
 }
 
 export async function getFeeds() {
-  const feedsTable = await db.select().from(feeds)
-  return feedsTable
+  const result = await db.select().from(feeds);
+  return result;
+}
+
+export async function getFeedByURL(url: string) {
+  const result = await db.select().from(feeds).where(eq(feeds.url, url));
+  return firstOrUndefined(result);
 }

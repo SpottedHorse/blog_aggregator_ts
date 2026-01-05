@@ -15,6 +15,13 @@
       "when": 1766518484753,
       "tag": "0001_dark_timeslip",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767626974595,
+      "tag": "0002_minor_sebastian_shaw",
+      "breakpoints": true
     }
   ]
 }
