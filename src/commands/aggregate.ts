@@ -1,8 +1,8 @@
 import { fetchFeed } from "../lib/rss";
 import { readConfig } from "src/config";
-import { addFeed } from "src/lib/db/queries/feeds";
+import { addFeed, getFeeds } from "src/lib/db/queries/feeds";
 import type { SelectUser, SelectFeed, InsertFeed } from "../lib/db/schema";
-import { selectUser, getUser } from "src/lib/db/queries/users";
+import { selectUser, getUser, getUserByID } from "src/lib/db/queries/users";
 
 export async function handlerAgg(_: string) {
   const feedURL = "https://www.wagslane.dev/index.xml";
@@ -30,4 +30,12 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
 
 async function printFeed(feedEntry: InsertFeed, userEntry: SelectUser) {
   console.log(`Feed: ${JSON.stringify(feedEntry, null, 2)}\n\nUser: ${JSON.stringify(userEntry, null, 2)}`);
+}
+
+export async function handlerFeeds() {
+  const feedsTable = await getFeeds();
+  for (const feed of feedsTable) {
+    const user = await getUserByID(feed.userId)
+    console.log(`Name: ${feed.name}\nURL: ${feed.url}\nUser: ${user?.name}\n`)
+  }
 }

@@ -1,5 +1,5 @@
 import { db } from "..";
-import { feeds, users } from "../schema";
+import { feeds, users, type SelectFeed } from "../schema";
 import { selectUser } from "./users";
 
 
@@ -8,4 +8,9 @@ export async function addFeed(name: string, feedURL: string, user_name: string) 
   // console.log(`userUUID: ${userUUID.id}\n`)
   const [result] = await db.insert(feeds).values({ name, url: feedURL, userId: userUUID.id }).returning();
   return result;
+}
+
+export async function getFeeds() {
+  const feedsTable = await db.select().from(feeds)
+  return feedsTable
 }

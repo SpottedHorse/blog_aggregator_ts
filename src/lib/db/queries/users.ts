@@ -2,6 +2,7 @@ import { db } from "..";
 import { users } from "../schema";
 import { eq } from "drizzle-orm";
 import { firstOrUndefined } from "./utils";
+import { PgUUID } from "drizzle-orm/pg-core";
 
 export async function createUser(name: string) {
   const [result] = await db.insert(users).values({ name: name }).returning();
@@ -32,4 +33,9 @@ export async function selectUser(name: string) {
     throw new Error("User can not be found");
   }
   return result[0];
+}
+
+export async function getUserByID(id: string) {
+  const result = await db.select().from(users).where(eq(users.id, id))
+  return firstOrUndefined(result)
 }
