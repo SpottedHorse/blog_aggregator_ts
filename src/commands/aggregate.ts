@@ -1,7 +1,8 @@
-import { Feed } from "src/lib/db/schema";
+import { Feed, NewPost } from "src/lib/db/schema";
 import { fetchFeed } from "../lib/rss";
 import { parseDuration } from "src/lib/time";
 import { markFeedFetched, getNextFeedToFetch } from "src/lib/db/queries/feeds";
+import { createPost } from "src/lib/db/queries/posts";
 
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
@@ -51,6 +52,21 @@ async function scrapeFeed(feed: Feed) {
   await markFeedFetched(feed.id);
 
   const feedData = await fetchFeed(feed.url);
+  for (let item of feedData.channel.item) {
+    console.log(`Found post: %s`, item.title);
+
+    const now = new Date();
+
+    await createPost({
+      url: item.link,
+      feedId: feed.id,
+      title: item.title,
+      createdAt: now,
+      updatedAt: now,
+      description: item.description,
+      publishedAt: new Date(item.pubDate),
+    } satisfies NewPost);
+  }
 
   console.log(
     `Feed ${feed.name} collected, ${feedData.channel.item.length} posts found`,
